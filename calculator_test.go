@@ -36,8 +36,21 @@ func TestCalculation(t *testing.T) {
 
 		{"ln2", math.Ln2},
 		{"log2e", math.Log2E},
+		{"ln2 * log2e", math.Ln2 * math.Log2E},
 		{"ln10", math.Ln10},
 		{"log10e", math.Log10E},
+		{"ln10 * log10e", math.Ln10 * math.Log10E},
+
+		{"abs(-1.5)", math.Abs(-1.5)},
+		{"Abs(-1.5)", math.Abs(1.5)},
+		{"ABS(-1.5)", math.Abs(1.5)},
+		{"abs( (1.2 +  2.5 ) *   2.0  )", math.Abs((1.2 + 2.5) * 2.0)},
+
+		{"Atan2(1.2,3.4)", math.Atan2(1.2, 3.4)},
+		{"Atan2(1.2, 3.4)", math.Atan2(1.2, 3.4)},
+		{"Atan2( (1.0 + 0.2) * 0.4, -1.7 * 2)", math.Atan2((1.0+0.2)*0.4, -1.7*2)},
+
+		{"fma(1.2, 2.3, 4.5)", math.FMA(1.2, 2.3, 4.5)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.in, func(t *testing.T) {
@@ -46,5 +59,12 @@ func TestCalculation(t *testing.T) {
 				assert.InDelta(t, tt.out, val, 0.001)
 			}
 		})
+	}
+}
+
+func TestNan(t *testing.T) {
+	val, err := Calculate("nan()")
+	if assert.NoError(t, err) {
+		assert.True(t, math.IsNaN(val))
 	}
 }

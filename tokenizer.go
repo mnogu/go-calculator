@@ -12,6 +12,7 @@ type tokenKind string
 const (
 	reservedToken tokenKind = "reserved"
 	numberToken   tokenKind = "number"
+	identToken    tokenKind = "ident"
 )
 
 type token struct {
@@ -68,6 +69,14 @@ func numberPrefix(runes []rune, i *int, n int) (float64, error) {
 	return 0, errors.New("expected a number")
 }
 
+func isAlpha(char rune) bool {
+	return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z')
+}
+
+func isAlNum(char rune) bool {
+	return isAlpha(char) || (char >= '0' && char <= '9')
+}
+
 func tokenize(input string) ([]token, error) {
 	runes := []rune(input)
 	i := 0
@@ -77,6 +86,17 @@ func tokenize(input string) ([]token, error) {
 		char := runes[i]
 		if unicode.IsSpace(char) {
 			i++
+			continue
+		}
+
+		if isAlpha(char) {
+			start := i
+			i++
+			for i < n && isAlNum(runes[i]) {
+				i++
+			}
+			tokens = append(tokens,
+				token{kind: identToken, str: string(runes[start:i])})
 			continue
 		}
 

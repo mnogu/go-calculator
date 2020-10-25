@@ -2,6 +2,8 @@ package calculator
 
 import (
 	"errors"
+	"math"
+	"strings"
 )
 
 type nodeKind string
@@ -28,6 +30,30 @@ func numberNode(tokens []token, i *int) (*node, error) {
 	}
 	*i++
 	return &node{kind: numNode, val: t.val}, nil
+}
+
+func constantNode(tokens []token, i *int) (*node, error) {
+	constants := map[string]float64{
+		"e":   math.E,
+		"pi":  math.Pi,
+		"phi": math.Phi,
+
+		"sqrt2":   math.Sqrt2,
+		"sqrte":   math.SqrtE,
+		"sqrtpi":  math.SqrtPi,
+		"sqrtphi": math.SqrtPhi,
+
+		"ln2":    math.Ln2,
+		"log2e":  math.Log2E,
+		"ln10":   math.Ln10,
+		"log10e": math.Log10E,
+	}
+	val, ok := constants[strings.ToLower(tokens[*i].str)]
+	if !ok {
+		return nil, errors.New("unknown constant")
+	}
+	*i++
+	return &node{kind: numNode, val: val}, nil
 }
 
 func consume(tokens []token, i *int, s string) bool {
@@ -120,6 +146,13 @@ func primary(tokens []token, i *int) (*node, error) {
 		consume(tokens, i, ")")
 		return n, nil
 
+	}
+	if tokens[*i].kind == identToken {
+		n, err := constantNode(tokens, i)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	}
 	return numberNode(tokens, i)
 }

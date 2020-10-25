@@ -186,7 +186,7 @@ func (p *parser) add() (*node, error) {
 		return nil, err
 	}
 
-	for p.i < len(p.tokens) {
+	for {
 		if p.consume("+") {
 			n, err = p.insert(n, p.mul, addNode)
 			if err != nil {
@@ -201,7 +201,6 @@ func (p *parser) add() (*node, error) {
 			return n, nil
 		}
 	}
-	return n, nil
 }
 
 func (p *parser) mul() (*node, error) {
@@ -210,7 +209,7 @@ func (p *parser) mul() (*node, error) {
 		return nil, err
 	}
 
-	for p.i < len(p.tokens) {
+	for {
 		if p.consume("*") {
 			n, err = p.insert(n, p.unary, mulNode)
 			if err != nil {
@@ -225,7 +224,6 @@ func (p *parser) mul() (*node, error) {
 			return n, nil
 		}
 	}
-	return n, nil
 }
 
 func (p *parser) unary() (*node, error) {

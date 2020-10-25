@@ -13,7 +13,7 @@ calculator> 180*atan2(log(e), log10(10))/pi
 calculator> exit
 ```
 
-You can also use the `calculator.Calculate()` in your application:
+You can also use `calculator.Calculate()` in your application:
 ```go
 package main
 

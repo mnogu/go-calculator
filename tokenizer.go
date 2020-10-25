@@ -13,6 +13,7 @@ const (
 	reservedToken tokenKind = "reserved"
 	numberToken   tokenKind = "number"
 	identToken    tokenKind = "ident"
+	eosToken      tokenKind = "eos"
 )
 
 type token struct {
@@ -113,5 +114,6 @@ func tokenize(input string) ([]token, error) {
 
 		return nil, &invalidTokenError{input: input, position: i}
 	}
+	tokens = append(tokens, token{kind: eosToken})
 	return tokens, nil
 }

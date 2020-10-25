@@ -22,7 +22,8 @@ func Calculate(expr string) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	n, err := parse(tokens)
+	p := newParser(tokens)
+	n, err := p.parse()
 	if err != nil {
 		return 0, err
 	}

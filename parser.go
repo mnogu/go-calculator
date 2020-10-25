@@ -23,16 +23,25 @@ type node struct {
 	val   float64
 }
 
-func numberNode(tokens []token, i *int) (*node, error) {
-	t := tokens[*i]
+type parser struct {
+	tokens []token
+	i      int
+}
+
+func newParser(tokens []token) *parser {
+	return &parser{tokens: tokens, i: 0}
+}
+
+func (p *parser) numberNode() (*node, error) {
+	t := p.tokens[p.i]
 	if t.kind != numberToken {
 		return nil, errors.New("expected a number")
 	}
-	*i++
+	p.i++
 	return &node{kind: numNode, val: t.val}, nil
 }
 
-func constantNode(tokens []token, i *int) (*node, error) {
+func (p *parser) constantNode() (*node, error) {
 	constants := map[string]float64{
 		"e":   math.E,
 		"pi":  math.Pi,
@@ -48,52 +57,51 @@ func constantNode(tokens []token, i *int) (*node, error) {
 		"ln10":   math.Ln10,
 		"log10e": math.Log10E,
 	}
-	val, ok := constants[strings.ToLower(tokens[*i].str)]
+	val, ok := constants[strings.ToLower(p.tokens[p.i].str)]
 	if !ok {
 		return nil, errors.New("unknown constant")
 	}
-	*i++
+	p.i++
 	return &node{kind: numNode, val: val}, nil
 }
 
-func consume(tokens []token, i *int, s string) bool {
-	t := tokens[*i]
+func (p *parser) consume(s string) bool {
+	t := p.tokens[p.i]
 	if t.kind != reservedToken || t.str != s {
 		return false
 	}
-	*i++
+	p.i++
 	return true
 }
 
-func parse(tokens []token) (*node, error) {
-	i := 0
-	return add(tokens, &i)
+func (p *parser) parse() (*node, error) {
+	return p.add()
 
 }
 
-func insert(n *node, f func([]token, *int) (*node, error), tokens []token, i *int, kind nodeKind) (*node, error) {
+func (p *parser) insert(n *node, f func() (*node, error), kind nodeKind) (*node, error) {
 	left := n
-	right, err := f(tokens, i)
+	right, err := f()
 	if err != nil {
 		return n, err
 	}
 	return &node{kind: kind, left: left, right: right}, err
 }
 
-func add(tokens []token, i *int) (*node, error) {
-	n, err := mul(tokens, i)
+func (p *parser) add() (*node, error) {
+	n, err := p.mul()
 	if err != nil {
 		return nil, err
 	}
 
-	for *i < len(tokens) {
-		if consume(tokens, i, "+") {
-			n, err = insert(n, mul, tokens, i, addNode)
+	for p.i < len(p.tokens) {
+		if p.consume("+") {
+			n, err = p.insert(n, p.mul, addNode)
 			if err != nil {
 				return nil, err
 			}
-		} else if consume(tokens, i, "-") {
-			n, err = insert(n, mul, tokens, i, subNode)
+		} else if p.consume("-") {
+			n, err = p.insert(n, p.mul, subNode)
 			if err != nil {
 				return nil, err
 			}
@@ -104,20 +112,20 @@ func add(tokens []token, i *int) (*node, error) {
 	return n, nil
 }
 
-func mul(tokens []token, i *int) (*node, error) {
-	n, err := unary(tokens, i)
+func (p *parser) mul() (*node, error) {
+	n, err := p.unary()
 	if err != nil {
 		return nil, err
 	}
 
-	for *i < len(tokens) {
-		if consume(tokens, i, "*") {
-			n, err = insert(n, unary, tokens, i, mulNode)
+	for p.i < len(p.tokens) {
+		if p.consume("*") {
+			n, err = p.insert(n, p.unary, mulNode)
 			if err != nil {
 				return nil, err
 			}
-		} else if consume(tokens, i, "/") {
-			n, err = insert(n, unary, tokens, i, divNode)
+		} else if p.consume("/") {
+			n, err = p.insert(n, p.unary, divNode)
 			if err != nil {
 				return nil, err
 			}
@@ -128,31 +136,31 @@ func mul(tokens []token, i *int) (*node, error) {
 	return n, nil
 }
 
-func unary(tokens []token, i *int) (*node, error) {
-	if consume(tokens, i, "+") {
-		return primary(tokens, i)
-	} else if consume(tokens, i, "-") {
-		return insert(&node{kind: numNode, val: 0.0}, primary, tokens, i, subNode)
+func (p *parser) unary() (*node, error) {
+	if p.consume("+") {
+		return p.primary()
+	} else if p.consume("-") {
+		return p.insert(&node{kind: numNode, val: 0.0}, p.primary, subNode)
 	}
-	return primary(tokens, i)
+	return p.primary()
 }
 
-func primary(tokens []token, i *int) (*node, error) {
-	if consume(tokens, i, "(") {
-		n, err := add(tokens, i)
+func (p *parser) primary() (*node, error) {
+	if p.consume("(") {
+		n, err := p.add()
 		if err != nil {
 			return nil, err
 		}
-		consume(tokens, i, ")")
+		p.consume(")")
 		return n, nil
 
 	}
-	if tokens[*i].kind == identToken {
-		n, err := constantNode(tokens, i)
+	if p.tokens[p.i].kind == identToken {
+		n, err := p.constantNode()
 		if err != nil {
 			return nil, err
 		}
 		return n, nil
 	}
-	return numberNode(tokens, i)
+	return p.numberNode()
 }

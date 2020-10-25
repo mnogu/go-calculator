@@ -12,7 +12,6 @@ type tokenKind string
 const (
 	reservedToken tokenKind = "reserved"
 	numberToken   tokenKind = "number"
-	eosToken      tokenKind = "eos"
 )
 
 type token struct {

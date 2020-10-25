@@ -1,5 +1,10 @@
 # go-calculator
 
+## Requirements
+
+* Go 1.14+
+  * for [`math.FMA()`](https://golang.org/pkg/math/#FMA)
+
 ## Usage
 
 ```

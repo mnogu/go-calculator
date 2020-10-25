@@ -1,7 +1,6 @@
 package calculator
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"strings"
@@ -41,7 +40,7 @@ func newParser(tokens []token) *parser {
 func (p *parser) numberNode() (*node, error) {
 	t := p.tokens[p.i]
 	if t.kind != numberToken {
-		return nil, errors.New("expected a number")
+		return nil, fmt.Errorf("expected a number: %s", t.str)
 	}
 	p.i++
 	return &node{kind: numNode, val: t.val}, nil
@@ -65,7 +64,7 @@ func (p *parser) constantNode(str string) (*node, error) {
 	}
 	val, ok := constants[strings.ToLower(str)]
 	if !ok {
-		return nil, errors.New("unknown constant")
+		return nil, fmt.Errorf("unknown constant: %s", str)
 	}
 	p.i++
 	return &node{kind: numNode, val: val}, nil

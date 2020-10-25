@@ -51,11 +51,11 @@ func isOperator(char rune) bool {
 	return false
 }
 
-func numberPrefix(runes []rune, i *int, n int) (float64, error) {
+func numberPrefix(chars []rune, i *int, n int) (float64, error) {
 	val := 0.0
 	len := 0
 	for *i < n {
-		curr, err := strconv.ParseFloat(string(runes[*i-len:*i+1]), 64)
+		curr, err := strconv.ParseFloat(string(chars[*i-len:*i+1]), 64)
 		if err != nil {
 			break
 		}
@@ -78,12 +78,12 @@ func isAlNum(char rune) bool {
 }
 
 func tokenize(input string) ([]token, error) {
-	runes := []rune(input)
+	chars := []rune(input)
 	i := 0
-	n := len(runes)
+	n := len(chars)
 	tokens := []token{}
 	for i < n {
-		char := runes[i]
+		char := chars[i]
 		if unicode.IsSpace(char) {
 			i++
 			continue
@@ -92,11 +92,11 @@ func tokenize(input string) ([]token, error) {
 		if isAlpha(char) {
 			start := i
 			i++
-			for i < n && isAlNum(runes[i]) {
+			for i < n && isAlNum(chars[i]) {
 				i++
 			}
 			tokens = append(tokens,
-				token{kind: identToken, str: string(runes[start:i])})
+				token{kind: identToken, str: string(chars[start:i])})
 			continue
 		}
 
@@ -106,7 +106,7 @@ func tokenize(input string) ([]token, error) {
 			continue
 		}
 
-		if val, err := numberPrefix(runes, &i, n); err == nil {
+		if val, err := numberPrefix(chars, &i, n); err == nil {
 			tokens = append(tokens, token{kind: numberToken, val: val})
 			continue
 		}

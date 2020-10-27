@@ -70,63 +70,33 @@ func (p *parser) constantNode(str string) (*node, error) {
 	return &node{kind: numNode, val: val}, nil
 }
 
-func (p *parser) functionNode(str string) (*node, error) {
-	functions := map[string]int{
-		"abs":         1,
-		"acos":        1,
-		"acosh":       1,
-		"asin":        1,
-		"asinh":       1,
-		"atan":        1,
-		"atan2":       2,
-		"atanh":       1,
-		"cbrt":        1,
-		"ceil":        1,
-		"copysign":    2,
-		"cos":         1,
-		"cosh":        1,
-		"dim":         2,
-		"erf":         1,
-		"erfc":        1,
-		"erfcinv":     1,
-		"erfinv":      1,
-		"exp":         1,
-		"exp2":        1,
-		"expm1":       1,
-		"fma":         3,
-		"floor":       1,
-		"gamma":       1,
-		"hypot":       2,
-		"j0":          1,
-		"j1":          1,
-		"log":         1,
-		"log10":       1,
-		"log1p":       1,
-		"log2":        1,
-		"logb":        1,
-		"max":         2,
-		"min":         2,
-		"mod":         2,
-		"nan":         0,
-		"nextafter":   2,
-		"pow":         2,
-		"remainder":   2,
-		"round":       1,
-		"roundtoeven": 1,
-		"sin":         1,
-		"sinh":        1,
-		"sqrt":        1,
-		"tan":         1,
-		"tanh":        1,
-		"trunc":       1,
-		"y0":          1,
-		"y1":          1,
-	}
-	funcName := strings.ToLower(str)
-	num, ok := functions[funcName]
+func argumentNumber(funcName string) (int, error) {
+	f, ok := functions[funcName]
 	if !ok {
-		return nil, fmt.Errorf("unknown function: %s", funcName)
+		return 0, fmt.Errorf("unknown function: %s", funcName)
 	}
+
+	switch f.(type) {
+	case func() float64:
+		return 0, nil
+	case func(float64) float64:
+		return 1, nil
+	case func(float64, float64) float64:
+		return 2, nil
+	case func(float64, float64, float64) float64:
+		return 3, nil
+	default:
+		return 0, fmt.Errorf("invalid function: %s", funcName)
+	}
+}
+
+func (p *parser) functionNode(str string) (*node, error) {
+	funcName := strings.ToLower(str)
+	num, err := argumentNumber(funcName)
+	if err != nil {
+		return nil, err
+	}
+
 	if p.consume(")") {
 		if num != 0 {
 			return nil, fmt.Errorf("%s should have argument(s)", funcName)

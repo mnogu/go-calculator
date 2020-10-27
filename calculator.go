@@ -5,61 +5,62 @@ import (
 	"math"
 )
 
+var functions = map[string]interface{}{
+	"abs":         math.Abs,
+	"acos":        math.Acos,
+	"acosh":       math.Acosh,
+	"asin":        math.Asin,
+	"asinh":       math.Asinh,
+	"atan":        math.Atan,
+	"atan2":       math.Atan2,
+	"atanh":       math.Atanh,
+	"cbrt":        math.Cbrt,
+	"ceil":        math.Ceil,
+	"copysign":    math.Copysign,
+	"cos":         math.Cos,
+	"cosh":        math.Cosh,
+	"dim":         math.Dim,
+	"erf":         math.Erf,
+	"erfc":        math.Erfc,
+	"erfcinv":     math.Erfcinv, // Go 1.10+
+	"erfinv":      math.Erfinv,  // Go 1.10+
+	"exp":         math.Exp,
+	"exp2":        math.Exp2,
+	"expm1":       math.Expm1,
+	"fma":         math.FMA, // Go 1.14+
+	"floor":       math.Floor,
+	"gamma":       math.Gamma,
+	"hypot":       math.Hypot,
+	"j0":          math.J0,
+	"j1":          math.J1,
+	"log":         math.Log,
+	"log10":       math.Log10,
+	"log1p":       math.Log1p,
+	"log2":        math.Log2,
+	"logb":        math.Logb,
+	"max":         math.Max,
+	"min":         math.Min,
+	"mod":         math.Mod,
+	"nan":         math.NaN,
+	"nextafter":   math.Nextafter,
+	"pow":         math.Pow,
+	"remainder":   math.Remainder,
+	"round":       math.Round,       // Go 1.10+
+	"roundtoeven": math.RoundToEven, // Go 1.10+
+	"sin":         math.Sin,
+	"sinh":        math.Sinh,
+	"sqrt":        math.Sqrt,
+	"tan":         math.Tan,
+	"tanh":        math.Tanh,
+	"trunc":       math.Trunc,
+	"y0":          math.Y0,
+	"y1":          math.Y1,
+}
+
 func call(funcName string, args []float64) (float64, error) {
-	functions := map[string]interface{}{
-		"abs":         math.Abs,
-		"acos":        math.Acos,
-		"acosh":       math.Acosh,
-		"asin":        math.Asin,
-		"asinh":       math.Asinh,
-		"atan":        math.Atan,
-		"atan2":       math.Atan2,
-		"atanh":       math.Atanh,
-		"cbrt":        math.Cbrt,
-		"ceil":        math.Ceil,
-		"copysign":    math.Copysign,
-		"cos":         math.Cos,
-		"cosh":        math.Cosh,
-		"dim":         math.Dim,
-		"erf":         math.Erf,
-		"erfc":        math.Erfc,
-		"erfcinv":     math.Erfcinv,
-		"erfinv":      math.Erfinv,
-		"exp":         math.Exp,
-		"exp2":        math.Exp2,
-		"expm1":       math.Expm1,
-		"fma":         math.FMA,
-		"floor":       math.Floor,
-		"gamma":       math.Gamma,
-		"hypot":       math.Hypot,
-		"j0":          math.J0,
-		"j1":          math.J1,
-		"log":         math.Log,
-		"log10":       math.Log10,
-		"log1p":       math.Log1p,
-		"log2":        math.Log2,
-		"logb":        math.Logb,
-		"max":         math.Max,
-		"min":         math.Min,
-		"mod":         math.Mod,
-		"nan":         math.NaN,
-		"nextafter":   math.Nextafter,
-		"pow":         math.Pow,
-		"remainder":   math.Remainder,
-		"round":       math.Round,
-		"roundtoeven": math.RoundToEven,
-		"sin":         math.Sin,
-		"sinh":        math.Sinh,
-		"sqrt":        math.Sqrt,
-		"tan":         math.Tan,
-		"tanh":        math.Tanh,
-		"trunc":       math.Trunc,
-		"y0":          math.Y0,
-		"y1":          math.Y1,
-	}
 	f, ok := functions[funcName]
 	if !ok {
-		return 0, fmt.Errorf("function %s not found", funcName)
+		return 0, fmt.Errorf("unknown function %s", funcName)
 	}
 	switch f := f.(type) {
 	case func() float64:
@@ -70,8 +71,9 @@ func call(funcName string, args []float64) (float64, error) {
 		return f(args[0], args[1]), nil
 	case func(float64, float64, float64) float64:
 		return f(args[0], args[1], args[2]), nil
+	default:
+		return 0, fmt.Errorf("invalid function %s", funcName)
 	}
-	return 0, fmt.Errorf("unknown function %s", funcName)
 }
 
 func calculate(n *node) (float64, error) {
